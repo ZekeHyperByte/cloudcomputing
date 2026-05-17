@@ -1,16 +1,22 @@
-export const config = { api: { bodyParser: { sizeLimit: '10mb' } } };
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (!req.body) {
+    return res.status(400).json({ error: 'Request body is empty or not parsed.' });
+  }
 
   const { model, imageBase64, mimeType } = req.body;
   const apiKey = process.env.HF_TOKEN;
 
   if (!apiKey) {
     return res.status(500).json({ error: 'HF_TOKEN environment variable not set.' });
+  }
+
+  if (!model || !imageBase64 || !mimeType) {
+    return res.status(400).json({ error: 'Missing model, imageBase64, or mimeType.' });
   }
 
   try {
@@ -33,4 +39,6 @@ export default async function handler(req, res) {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-}
+};
+
+module.exports.config = { api: { bodyParser: { sizeLimit: '10mb' } } };
