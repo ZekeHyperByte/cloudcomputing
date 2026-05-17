@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cloud AI — Image Classification · Hugging Face</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(99,179,237,0.15);
+    --border2: rgba(99,179,237,0.3);
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --text: #f0f6ff;
+    --muted: #8fa3bf;
+    --danger: #f87171;
+    --card-r: 16px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 900px; height: 500px;
+    background: radial-gradient(ellipse, rgba(56,189,248,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    gap: 16px;
+  }
+
+  .header-left h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #f0f6ff 0%, #38bdf8 60%, #818cf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+
+  .header-left p {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-cloud {
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent);
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent3);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* API Key Section */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-r);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 300;
+  }
+
+  input[type="text"], input[type="password"], select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus, input[type="password"]:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  select option { background: var(--surface); }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+
+  /* Model selector */
+  .model-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .model-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .model-card:hover { border-color: var(--border2); }
+
+  .model-card.active {
+    border-color: var(--accent);
+    background: rgba(56,189,248,0.06);
+  }
+
+  .model-card.active::after {
+    content: '✓';
+    position: absolute;
+    top: 10px; right: 12px;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .model-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    margin-bottom: 3px;
+  }
+
+  .model-desc {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--card-r);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(56,189,248,0.04);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%;
+  }
+
+  .upload-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .upload-zone h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .upload-zone p {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* Preview */
+  #preview-wrap {
+    display: none;
+    margin-top: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+
+  #preview-img {
+    width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+    background: var(--bg);
+    display: block;
+  }
+
+  .preview-label {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(10,14,26,0.85);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+  }
+
+  /* Classify button */
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #0a0e1a;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Loading */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(10,14,26,0.3);
+    border-top-color: #0a0e1a;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Results */
+  #results-section {
+    display: none;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .results-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent3);
+  }
+
+  .api-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 3px 8px;
+    background: var(--surface2);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .result-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-item:last-child { border-bottom: none; }
+
+  .result-rank {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .result-rank.top { color: var(--accent); }
+
+  .result-info { flex: 1; min-width: 0; }
+
+  .result-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .result-bar-wrap {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .result-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0;
+  }
+
+  .result-bar.top { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+  .result-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    min-width: 44px;
+    text-align: right;
+  }
+
+  /* Error */
+  .error-box {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 12px;
+    display: none;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Footer info */
+  .info-strip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .info-key {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .info-val {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0 20px;
+  }
+
+  /* Responsive */
+  @media (max-width: 560px) {
+    .model-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="header-left">
+      <h1>Cloud AI<br/>Image Classifier</h1>
+      <p style="margin-top:8px;">Powered by Hugging Face Inference API</p>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding-top:6px;">
+      <span class="badge badge-cloud">
+        <span class="badge-dot"></span>
+        Cloud API
+      </span>
+      <span style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">PaaS / AI Cloud</span>
+    </div>
+  </header>
+
+  <!-- Step 1: API Key -->
+  <div class="section">
+    <div class="section-title">
+      <span class="step-num">1</span>
+      Konfigurasi API
+    </div>
+    <label>Hugging Face API Token</label>
+    <div class="input-row">
+      <input type="password" id="api-key" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+      <button onclick="toggleKey()" style="padding:10px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--muted);cursor:pointer;font-size:12px;white-space:nowrap;">
+        Tampilkan
+      </button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace;">
+      Dapatkan token di: huggingface.co/settings/tokens
+    </p>
+  </div>
+
+  <!-- Step 2: Model -->
+  <div class="section">
+    <div class="section-title">
+      <span class="step-num">2</span>
+      Pilih Model
+    </div>
+    <div class="model-grid" id="model-grid">
+      <div class="model-card active" onclick="selectModel(this,'google/vit-base-patch16-224')">
+        <div class="model-name">google/vit-base-patch16-224</div>
+        <div class="model-desc">Vision Transformer — 1000 ImageNet labels. Akurasi tinggi, general purpose.</div>
+      </div>
+      <div class="model-card" onclick="selectModel(this,'microsoft/resnet-50')">
+        <div class="model-name">microsoft/resnet-50</div>
+        <div class="model-desc">ResNet-50 klasik. Ringan, cepat, cocok untuk demo real-time.</div>
+      </div>
+      <div class="model-card" onclick="selectModel(this,'facebook/convnext-base-224')">
+        <div class="model-name">facebook/convnext-base-224</div>
+        <div class="model-desc">ConvNeXt — arsitektur modern berbasis CNN dari Meta AI.</div>
+      </div>
+      <div class="model-card" onclick="selectModel(this,'google/efficientnet-b7')">
+        <div class="model-name">google/efficientnet-b7</div>
+        <div class="model-desc">EfficientNet-B7. Efisien dan akurat untuk berbagai kategori.</div>
+      </div>
+    </div>
+    <div id="selected-model-info" style="margin-top:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+      <span style="font-size:11px;color:var(--muted);">Model aktif: </span>
+      <span id="active-model-text" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">google/vit-base-patch16-224</span>
+    </div>
+  </div>
+
+  <!-- Step 3: Upload -->
+  <div class="section">
+    <div class="section-title">
+      <span class="step-num">3</span>
+      Upload Gambar
+    </div>
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])" />
+      <span class="upload-icon">🖼️</span>
+      <h3>Klik atau drag gambar ke sini</h3>
+      <p>JPG, PNG, WEBP — maks. 10 MB</p>
+    </div>
+    <div id="preview-wrap">
+      <img id="preview-img" alt="Preview" />
+      <span class="preview-label" id="file-name-label">image.jpg</span>
+    </div>
+
+    <button class="btn-primary" id="classify-btn" disabled onclick="classify()">
+      <span id="btn-text">🔍 Klasifikasikan Gambar</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+    <div class="error-box" id="error-box"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="section" id="results-section">
+    <div class="results-header">
+      <h2>🎯 Hasil Klasifikasi</h2>
+      <span class="api-badge" id="resp-time-badge">—</span>
+    </div>
+    <div id="results-list"></div>
+
+    <div class="info-strip" id="info-strip"></div>
+  </div>
+
+</div>
+
+<script>
+let selectedModel = 'google/vit-base-patch16-224';
+let currentFile = null;
+
+function toggleKey() {
+  const inp = document.getElementById('api-key');
+  const btn = event.currentTarget;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.textContent = 'Sembunyikan';
+  } else {
+    inp.type = 'password';
+    btn.textContent = 'Tampilkan';
+  }
+}
+
+function selectModel(el, model) {
+  document.querySelectorAll('.model-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedModel = model;
+  document.getElementById('active-model-text').textContent = model;
+}
+
+function handleFile(file) {
+  if (!file) return;
+  currentFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('preview-img');
+    img.src = e.target.result;
+    document.getElementById('preview-wrap').style.display = 'block';
+    document.getElementById('file-name-label').textContent = file.name;
+    document.getElementById('classify-btn').disabled = false;
+    document.getElementById('results-section').style.display = 'none';
+    document.getElementById('error-box').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handleFile(file);
+});
+
+async function classify() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!apiKey) { showError('Masukkan API token Hugging Face terlebih dahulu.'); return; }
+  if (!currentFile) { showError('Pilih gambar terlebih dahulu.'); return; }
+
+  setLoading(true);
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+
+  const t0 = Date.now();
+  try {
+    const arrayBuffer = await currentFile.arrayBuffer();
+    const blob = new Blob([arrayBuffer], { type: currentFile.type });
+
+    const response = await fetch(
+      `https://api-inference.huggingface.co/models/${selectedModel}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': currentFile.type
+        },
+        body: blob
+      }
+    );
+
+    const elapsed = Date.now() - t0;
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      if (response.status === 503) {
+        showError(`Model sedang loading (cold start). Tunggu ~20 detik lalu coba lagi.\n${err.error || ''}`);
+      } else if (response.status === 401) {
+        showError('API token tidak valid. Pastikan token dimulai dengan "hf_".');
+      } else {
+        showError(`Error ${response.status}: ${err.error || response.statusText}`);
+      }
+      return;
+    }
+
+    const data = await response.json();
+    renderResults(data, elapsed);
+  } catch (e) {
+    showError('Gagal menghubungi API. Periksa koneksi internet.\n' + e.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderResults(data, elapsed) {
+  const section = document.getElementById('results-section');
+  const list = document.getElementById('results-list');
+  section.style.display = 'block';
+
+  document.getElementById('resp-time-badge').textContent = `${elapsed}ms response time`;
+
+  const top5 = data.slice(0, 5);
+  list.innerHTML = '';
+  top5.forEach((item, i) => {
+    const pct = (item.score * 100).toFixed(1);
+    const div = document.createElement('div');
+    div.className = 'result-item';
+    div.innerHTML = `
+      <span class="result-rank ${i === 0 ? 'top' : ''}">#${i+1}</span>
+      <div class="result-info">
+        <div class="result-label">${item.label}</div>
+        <div class="result-bar-wrap">
+          <div class="result-bar ${i === 0 ? 'top' : ''}" id="bar-${i}"></div>
+        </div>
+      </div>
+      <span class="result-score">${pct}%</span>
+    `;
+    list.appendChild(div);
+  });
+
+  setTimeout(() => {
+    top5.forEach((item, i) => {
+      const bar = document.getElementById(`bar-${i}`);
+      if (bar) bar.style.width = (item.score * 100) + '%';
+    });
+  }, 50);
+
+  document.getElementById('info-strip').innerHTML = `
+    <div class="info-item">
+      <span class="info-key">Model</span>
+      <span class="info-val">${selectedModel.split('/')[1]}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-key">Provider</span>
+      <span class="info-val">Hugging Face Cloud</span>
+    </div>
+    <div class="info-item">
+      <span class="info-key">Latency</span>
+      <span class="info-val">${elapsed}ms</span>
+    </div>
+    <div class="info-item">
+      <span class="info-key">Labels returned</span>
+      <span class="info-val">${data.length}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-key">Top prediction</span>
+      <span class="info-val">${(data[0].score * 100).toFixed(1)}% confidence</span>
+    </div>
+  `;
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('classify-btn');
+  const txt = document.getElementById('btn-text');
+  const spin = document.getElementById('spinner');
+  btn.disabled = on;
+  txt.textContent = on ? 'Memproses...' : '🔍 Klasifikasikan Gambar';
+  spin.style.display = on ? 'block' : 'none';
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+</script>
+</body>
+</html>
