@@ -32,7 +32,6 @@
     overflow-x: hidden;
   }
 
-  /* Grid background */
   body::before {
     content: '';
     position: fixed;
@@ -64,7 +63,6 @@
     padding: 48px 24px 80px;
   }
 
-  /* Header */
   header {
     display: flex;
     align-items: flex-start;
@@ -121,7 +119,6 @@
     50% { opacity: 0.5; transform: scale(0.8); }
   }
 
-  /* API Key Section */
   .section {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -153,41 +150,6 @@
     font-family: 'DM Mono', monospace;
   }
 
-  label {
-    display: block;
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-weight: 300;
-  }
-
-  input[type="text"], input[type="password"], select {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  input[type="text"]:focus, input[type="password"]:focus, select:focus {
-    border-color: var(--accent);
-  }
-
-  select option { background: var(--surface); }
-
-  .input-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    align-items: end;
-  }
-
-  /* Model selector */
   .model-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -233,7 +195,6 @@
     font-weight: 300;
   }
 
-  /* Upload zone */
   .upload-zone {
     border: 2px dashed var(--border2);
     border-radius: var(--card-r);
@@ -256,11 +217,7 @@
     width: 100%;
   }
 
-  .upload-icon {
-    font-size: 40px;
-    margin-bottom: 12px;
-    display: block;
-  }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; display: block; }
 
   .upload-zone h3 {
     font-family: 'Syne', sans-serif;
@@ -269,13 +226,8 @@
     margin-bottom: 6px;
   }
 
-  .upload-zone p {
-    font-size: 13px;
-    color: var(--muted);
-    font-weight: 300;
-  }
+  .upload-zone p { font-size: 13px; color: var(--muted); font-weight: 300; }
 
-  /* Preview */
   #preview-wrap {
     display: none;
     margin-top: 16px;
@@ -305,7 +257,6 @@
     color: var(--muted);
   }
 
-  /* Classify button */
   .btn-primary {
     width: 100%;
     padding: 14px;
@@ -329,7 +280,6 @@
   .btn-primary:active { transform: scale(0.99); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Loading */
   .spinner {
     width: 18px; height: 18px;
     border: 2px solid rgba(10,14,26,0.3);
@@ -341,10 +291,7 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Results */
-  #results-section {
-    display: none;
-  }
+  #results-section { display: none; }
 
   .results-header {
     display: flex;
@@ -392,7 +339,6 @@
   }
 
   .result-rank.top { color: var(--accent); }
-
   .result-info { flex: 1; min-width: 0; }
 
   .result-label {
@@ -430,7 +376,6 @@
     text-align: right;
   }
 
-  /* Error */
   .error-box {
     background: rgba(248,113,113,0.08);
     border: 1px solid rgba(248,113,113,0.3);
@@ -441,9 +386,9 @@
     margin-top: 12px;
     display: none;
     font-family: 'DM Mono', monospace;
+    white-space: pre-wrap;
   }
 
-  /* Footer info */
   .info-strip {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -455,11 +400,7 @@
     margin-top: 20px;
   }
 
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
+  .info-item { display: flex; flex-direction: column; gap: 2px; }
 
   .info-key {
     font-size: 10px;
@@ -475,13 +416,6 @@
     color: var(--text);
   }
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 8px 0 20px;
-  }
-
-  /* Responsive */
   @media (max-width: 560px) {
     .model-grid { grid-template-columns: 1fr; }
     header { flex-direction: column; }
@@ -505,28 +439,10 @@
     </div>
   </header>
 
-  <!-- Step 1: API Key -->
+  <!-- Step 1: Model -->
   <div class="section">
     <div class="section-title">
       <span class="step-num">1</span>
-      Konfigurasi API
-    </div>
-    <label>Hugging Face API Token</label>
-    <div class="input-row">
-      <input type="password" id="api-key" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
-      <button onclick="toggleKey()" style="padding:10px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--muted);cursor:pointer;font-size:12px;white-space:nowrap;">
-        Tampilkan
-      </button>
-    </div>
-    <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace;">
-      Dapatkan token di: huggingface.co/settings/tokens
-    </p>
-  </div>
-
-  <!-- Step 2: Model -->
-  <div class="section">
-    <div class="section-title">
-      <span class="step-num">2</span>
       Pilih Model
     </div>
     <div class="model-grid" id="model-grid">
@@ -547,16 +463,16 @@
         <div class="model-desc">EfficientNet-B7. Efisien dan akurat untuk berbagai kategori.</div>
       </div>
     </div>
-    <div id="selected-model-info" style="margin-top:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+    <div style="margin-top:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
       <span style="font-size:11px;color:var(--muted);">Model aktif: </span>
       <span id="active-model-text" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);">google/vit-base-patch16-224</span>
     </div>
   </div>
 
-  <!-- Step 3: Upload -->
+  <!-- Step 2: Upload -->
   <div class="section">
     <div class="section-title">
-      <span class="step-num">3</span>
+      <span class="step-num">2</span>
       Upload Gambar
     </div>
     <div class="upload-zone" id="upload-zone">
@@ -584,7 +500,6 @@
       <span class="api-badge" id="resp-time-badge">—</span>
     </div>
     <div id="results-list"></div>
-
     <div class="info-strip" id="info-strip"></div>
   </div>
 
@@ -593,18 +508,6 @@
 <script>
 let selectedModel = 'google/vit-base-patch16-224';
 let currentFile = null;
-
-function toggleKey() {
-  const inp = document.getElementById('api-key');
-  const btn = event.currentTarget;
-  if (inp.type === 'password') {
-    inp.type = 'text';
-    btn.textContent = 'Sembunyikan';
-  } else {
-    inp.type = 'password';
-    btn.textContent = 'Tampilkan';
-  }
-}
 
 function selectModel(el, model) {
   document.querySelectorAll('.model-card').forEach(c => c.classList.remove('active'));
@@ -640,52 +543,56 @@ zone.addEventListener('drop', e => {
 });
 
 async function classify() {
-  const apiKey = document.getElementById('api-key').value.trim();
-  if (!apiKey) { showError('Masukkan API token Hugging Face terlebih dahulu.'); return; }
-  if (!currentFile) { showError('Pilih gambar terlebih dahulu.'); return; }
+  if (!currentFile) return;
 
   setLoading(true);
   document.getElementById('error-box').style.display = 'none';
   document.getElementById('results-section').style.display = 'none';
 
   const t0 = Date.now();
-  try {
-    const arrayBuffer = await currentFile.arrayBuffer();
-    const blob = new Blob([arrayBuffer], { type: currentFile.type });
 
-    const response = await fetch(
-      `https://api-inference.huggingface.co/models/${selectedModel}`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': currentFile.type
-        },
-        body: blob
-      }
-    );
+  try {
+    const base64 = await fileToBase64(currentFile);
+
+    const response = await fetch('/api/classify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: selectedModel,
+        imageBase64: base64,
+        mimeType: currentFile.type
+      })
+    });
 
     const elapsed = Date.now() - t0;
+    const data = await response.json();
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
       if (response.status === 503) {
-        showError(`Model sedang loading (cold start). Tunggu ~20 detik lalu coba lagi.\n${err.error || ''}`);
-      } else if (response.status === 401) {
-        showError('API token tidak valid. Pastikan token dimulai dengan "hf_".');
+        showError('Model sedang loading (cold start). Tunggu ~20 detik lalu coba lagi.\n' + (data.error || ''));
+      } else if (response.status === 500 && data.error && data.error.includes('HF_TOKEN')) {
+        showError('HF_TOKEN belum diset di Vercel Environment Variables.\nPergi ke Settings → Environment Variables dan tambahkan HF_TOKEN.');
       } else {
-        showError(`Error ${response.status}: ${err.error || response.statusText}`);
+        showError('Error ' + response.status + ': ' + (data.error || JSON.stringify(data)));
       }
       return;
     }
 
-    const data = await response.json();
     renderResults(data, elapsed);
   } catch (e) {
-    showError('Gagal menghubungi API. Periksa koneksi internet.\n' + e.message);
+    showError('Gagal menghubungi server.\n' + e.message);
   } finally {
     setLoading(false);
   }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function renderResults(data, elapsed) {
