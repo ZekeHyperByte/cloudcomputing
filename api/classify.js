@@ -23,18 +23,27 @@ module.exports = async function handler(req, res) {
     const buffer = Buffer.from(imageBase64, 'base64');
 
     const response = await fetch(
-      `https://api-inference.huggingface.co/models/${model}`,
+      `https://router.huggingface.co/hf-inference/models/${model}`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': mimeType
+          'Content-Type': mimeType,
+          'Accept': 'application/json'
         },
         body: buffer
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(response.status || 502).json({
+        error: `Non-JSON response from HF (status ${response.status}): ${text.slice(0, 300)}`
+      });
+    }
     res.status(response.status).json(data);
   } catch (e) {
     res.status(500).json({ error: e.message });
