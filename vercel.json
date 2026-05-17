@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/classify.js": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
